@@ -13,25 +13,10 @@ import (
 )
 
 type Game struct {
-	tileSet *ebiten.Image
-	hero    Entity
-}
-
-func (g *Game) Update() error {
-	if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
-		g.hero.x -= 1
-
-	} else if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
-		g.hero.x += 1
-
-	} else if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
-		g.hero.y -= 1
-
-	} else if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
-		g.hero.y += 1
-
-	}
-	return nil
+	tileSet  *ebiten.Image
+	turn     int
+	heroTurn bool
+	hero     Entity
 }
 
 func NewGame() *Game {
@@ -42,13 +27,46 @@ func NewGame() *Game {
 	}
 
 	return &Game{
-		tileSet: img,
-		hero:    *NewEntity(0, 0, 64),
+		tileSet:  img,
+		heroTurn: true,
+		hero:     *NewEntity(0, 0, 64),
+		turn:     0,
 	}
 }
 
+func (g *Game) Update() error {
+	// Hero turn
+	if g.heroTurn {
+		if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
+			g.hero.x -= 1
+			g.heroTurn = false
+
+		} else if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
+			g.hero.x += 1
+			g.heroTurn = false
+
+		} else if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
+			g.hero.y -= 1
+			g.heroTurn = false
+
+		} else if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
+			g.hero.y += 1
+			g.heroTurn = false
+
+		}
+
+	} else {
+		g.turn += 1
+		// Entities turn
+
+		g.heroTurn = true
+
+	}
+	return nil
+}
+
 func (g *Game) Draw(screen *ebiten.Image) {
-	ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %0.2f", ebiten.CurrentTPS()))
+	ebitenutil.DebugPrint(screen, fmt.Sprintf("Turn: %d - TPS: %0.2f", g.turn, ebiten.CurrentTPS()))
 	for i := 0; i < 3600; i++ {
 		op := &ebiten.DrawImageOptions{}
 		opBg := &ebiten.DrawImageOptions{}
@@ -78,7 +96,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 func main() {
 	game := NewGame()
 	ebiten.SetWindowSize(1280, 720)
-	ebiten.SetWindowTitle("Hello, World!")
+	ebiten.SetWindowTitle("Grogue")
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
 	}
