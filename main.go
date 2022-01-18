@@ -13,10 +13,13 @@ import (
 )
 
 type Game struct {
-	tileSet  *ebiten.Image
-	turn     int
-	heroTurn bool
-	hero     Entity
+	tileSet      *ebiten.Image
+	turn         int
+	heroTurn     bool
+	hero         Entity
+	entitiesList []Entity
+	viewWidth    int
+	viewHeight   int
 }
 
 func NewGame() *Game {
@@ -26,11 +29,18 @@ func NewGame() *Game {
 		log.Fatal("Game - Error when opening file: ", err)
 	}
 
+	drunkBot := NewEntity(20, 20, int('b'), DrunkBot)
+
+	list := make([]Entity, 0)
+	list = append(list, *drunkBot)
 	return &Game{
-		tileSet:  img,
-		heroTurn: true,
-		hero:     *NewEntity(0, 0, 64),
-		turn:     0,
+		tileSet:      img,
+		heroTurn:     true,
+		hero:         *NewEntity(0, 0, 64, Hero),
+		entitiesList: list,
+		turn:         0,
+		viewWidth:    1280,
+		viewHeight:   720,
 	}
 }
 
@@ -90,7 +100,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return 1280, 720
+	return g.viewWidth, g.viewHeight
 }
 
 func main() {
